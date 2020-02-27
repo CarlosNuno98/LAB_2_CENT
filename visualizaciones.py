@@ -2,6 +2,6 @@
 # -- ------------------------------------------------------------------------------------ -- #
 # -- proyecto: Microestructura y Sistemas de Trading - Laboratorio 2 - Behavioral Finance
 # -- archivo: visualizaciones.py - para visualizacion de datos
-# -- mantiene: Francisco ME
-# -- repositorio: https://github.com/IFFranciscoME/LAB_2_JFME
+# -- mantiene: Carlos Nuño
+# -- repositorio: https://github.com/CarlosNuno98/LAB_2_CENT
 # -- ------------------------------------------------------------------------------------ -- #
