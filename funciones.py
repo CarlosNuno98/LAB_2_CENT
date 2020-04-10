@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Apr  9 23:20:41 2020
+
+@author: carlo
+"""
+
 # -- ------------------------------------------------------------------------------------ -- #
 # -- proyecto: Microestructura y Sistemas de Trading - Laboratorio 2 - Behavioral Finance
 # -- archivo: funciones.py - para procesamiento de datos
@@ -6,11 +13,12 @@
 # -- ------------------------------------------------------------------------------------ -- #
 
 import pandas as pd
-
+import numpy as np
 
 # -- --------------------------------------------------- FUNCION: Leer archivo de entrada -- #
 # -- ------------------------------------------------------------------------------------ -- #
-# --
+# -- Obtener un 
+
 
 def f_leer_archivo(param_archivo):
     '''
@@ -18,9 +26,11 @@ def f_leer_archivo(param_archivo):
     Parameters
     ----------
     param_archivo : str : nombre de archivo a leer
+    
     Returns
     -------
     df_data : pd.DataFrame : con informacion contenida en archivo leido
+    
     Debugging
     ---------
     param_archivo = 'archivo_tradeview_1.xlsx'
@@ -77,3 +87,248 @@ def f_pip_size(param_ins):
                  'xauusd': 10, 'xagusd': 10, 'btcusd': 1}
 
     return pips_inst[inst]
+
+# -- ------------------------------------------------------ FUNCION: Columna tiempos -- #
+# -- ------------------------------------------------------------------------------------ -- #
+# -- Segundos que permanecio cada operacion abierta
+
+# Importamos las librerias necesarias para crear esta funcion
+
+from datetime import  datetime
+from datetime import timedelta
+
+
+# Se crea la funcion
+
+def f_columnas_tiempos(datos):
+    '''
+
+    Parameters
+    ----------
+    datos : DataFrame con la informaciona utilizar
+    
+    Returns
+    -------
+    datos: con informacion contenida en archivo leido
+    
+    Debugging
+    ---------
+    datos = 'archivo_tradeview_1.xlsx'
+
+    '''
+
+    # Se toman las columnas de tiempo en donde se abrio y cerro la posicion y creamos un nuevo DataFrame con estas columnas
+    
+    df_new = datos[['opentime','closetime']]
+    df = pd.DataFrame(data=df_new)
+    df['opentime'] = pd.to_datetime(df_new['opentime'])
+    df['closetime'] = pd.to_datetime(df_new['closetime'])
+
+    # Se crea una nueva variable que resta los tiempos y despues los convertimos a segundos para al final agragarlos al DataFrame original
+    
+    Time = df['closetime'] - df['opentime']
+    Time = Time.dt.seconds
+    Time = pd.DataFrame(Time)
+    datos['Time'] = Time
+    return datos
+
+# -- ------------------------------------------------------ FUNCION: Columna pips -- #
+# -- ------------------------------------------------------------------------------------ -- #
+# -- Pips obtenidos en cada operacion
+
+def f_columnas_pips(datos):
+    '''
+
+    Parameters
+    ----------
+    datos : df con la informaciona utilizar
+    
+    Returns
+    -------
+    datos: con informacion obtenida de la funcion
+    
+    Debugging
+    ---------
+    datos = 'archivo_tradeview_1.xlsx'
+
+    '''
+    
+    # Se creo un nuevo DataFrame con las columnas que se iban a necesitar
+    Pips = datos[['symbol','type','openprice','closeprice']]
+    Pips.index = np.arange(0,len(Pips))
+    
+    pip = []
+    contador = 0
+    
+    # Entramos a un ciclo donde dependiendo del type y si es buy o sell es lo que la funcion hara e ira guardando los resultados en un nuevo arreglo
+    
+    for i in range(0,len(Pips)):
+        if Pips['type'][i] == 'buy':
+            f = Pips['symbol'][contador]
+            multiplicador = f_pip_size(param_ins = f)
+            pip.append((Pips['closeprice'][i] - Pips['openprice'][i]) * multiplicador)
+        else:
+            f = Pips['symbol'][contador]
+            multiplicador = f_pip_size(param_ins = f)
+            pip.append((Pips['openprice'][i] - Pips['closeprice'][i])*multiplicador)
+        contador = contador + 1
+           
+    # El arreglo se convierte en un DataFrame que despues sera agregado a nuestro DataFrame original
+    
+    Pips = pd.DataFrame(pip)
+    datos['Pips'] = Pips
+    return datos
+
+# -- ------------------------------------------------------ FUNCION: estadisticas_ba -- #
+# -- ------------------------------------------------------------------------------------ -- #
+# -- Diccionario con 2 tablas: da_1_tabla y df_1_ranking 
+
+
+def f_estadisticas_ba(datos):
+    '''
+
+    Parameters
+    ----------
+    datos : DataFrame con la informaciona utilizar
+    
+    Returns
+    -------
+    df_1_tabla : DataFrame con calculos sobre el comportmaiento de la cuenta
+    df_1_ranking: DataFrame con ratio de efectividad de operaciones realizadas
+    
+    Debugging
+    ---------
+    datos = 'archivo_tradeview_1.xlsx'
+
+    '''
+    
+    #df_1_tabla
+    
+    Pips = datos[['symbol','type','openprice','closeprice']]
+    Pips.index = np.arange(0,len(Pips))
+    Win = 0   #Ganadoras
+    Lose = 0  #Perdedoras
+    WinB = 0  #Ganadoras Compra
+    WinS = 0 #Ganadoras de Venta
+    LoseB = 0 #Perdedora Compra
+    LoseS = 0 #Perdedoras Venta
+
+
+    # Entramos a un ciclo en donde iremos contando los trades ganados y los perdidos y se iran agregando a la variable correspondiente
+
+    for i in range(0,len(datos)):
+        if datos['type'][i] == 'buy':
+            if datos['Pips'][i] > 0:
+                Win = Win + 1
+                WinB = WinB + 1
+            else:
+                Lose = Lose + 1 
+                LoseB = LoseB + 1
+        else:
+            if datos['Pips'][i] > 0:
+                Win = Win + 1
+                WinS = WinS + 1
+            else:
+                Lose = Lose + 1 
+                LoseS = LoseS + 1
+
+    # Se realizan las operaciones necesarias para poder obtener los resultados(divisiones, promedios...)
+
+    Ops_totales = len(Pips)
+    r_efectividad  = Win / Ops_totales
+    r_porcion = Lose / Win
+    r_efectividad_c = WinB / Ops_totales
+    r_efectividad_v = WinS / Ops_totales
+    Media_Profit = datos['profit'].mean()
+    Media_Pips = datos['Pips'].mean()
+
+    #Creamos una tabla en donde mostremos los resultados con sus respectivos nombres de las variables
+
+    df_1_tabla = pd.DataFrame (columns = ['Medida','Valor','Descripcion'])
+    df_1_tabla.Medida = ['Ops totales','Ganadoras','Ganadoras_c','Ganadoras_v','Perdedoras','Perdedoras_c','Perdedoras_v','Media (Profit)','Media (Pips)','r_efectividad','r_proporcion','r_efectividad_c','r_efectividad_v']
+    df_1_tabla.Descripcion = ['Operaciones totales','Operaciones ganadoras','Operaciones ganadoras de compra','Operaciones perdedoras de venta','Operaciones perdedoras','Operaciones perdedoras de compra','Operaciones perdedoras de venta','Mediana de profit de operaciones','Mediana de pips de operaciones','Ganadoras Totales/Operaciones Totales','Perdedoras Totales/Ganadoras Totales','Ganadoras Compras/Operaciones Totales','Ganadoras Ventas/ Operaciones Totales']
+    df_1_tabla.Valor = [Ops_totales, Win, WinB, WinS, Lose, LoseB, LoseS, Media_Profit, Media_Pips , r_efectividad, r_porcion, r_efectividad_c, r_efectividad_v,]
+    
+    #df_1_ranking
+    
+    # Se agrupan los valores de item donde se cuentan cuales fueron mayores a 1 en el profit para identificar que son ganadoras
+
+    efec = datos[['symbol','profit']]
+    count_movi = efec.groupby('symbol').count()
+    count_posit = efec[efec['profit'] > 0].groupby([efec['symbol']])
+    count_posit = count_posit.count()
+
+    # Se dividen las posiciones ganadas entre las totales y se multiplican por 100 para obtenerlo en porcentaje
+
+    Efectividad = ((count_posit['profit'] / count_movi['profit'] ) * 100).round(4)
+    Efectividad = pd.DataFrame(Efectividad)
+    Porcentaje  = [str(l) + "%" for l in Efectividad.profit]
+    Efectividad.profit = Porcentaje
+
+    # Creamos un nuevo DaraFrame con los resultados obtenidos
+
+    Ratio_efect = pd.DataFrame(Porcentaje)
+    Efectividad.rename(columns = {'profit':'rank'})
+    New = Efectividad.reset_index()
+    df_1_ranking = New.rename(columns={'symbol':'symbol'})
+    
+    #Juntamos todo en un diccionario que sera lo que nos devolvera la funcion
+    
+    Diccionario = {"Estadistica":df_1_tabla,"Efectividad":df_1_ranking}  
+    return Diccionario
+
+# -- ------------------------------------------------------ FUNCION: capital_acm -- #
+# -- ------------------------------------------------------------------------------------ -- #
+# -- Evolucion de capital de la cuenta de trading
+    
+def capital_acm(datos): 
+    capital = 5000
+    capital_acm = []
+    
+    # Creamos un ciclo en donde se estara sumando o restando el capital con la posicion realizada
+    
+    for i in range(0,len(datos)):
+        capital = datos['profit'][i] + capital
+        capital_acm.append(capital)
+
+    Capital_acm = pd.DataFrame(capital_acm)
+    datos['Capital_acm'] = Capital_acm
+    return datos
+
+# -- ------------------------------------------------------ FUNCION: f_profit_diario -- #
+# -- ------------------------------------------------------------------------------------ -- #
+# -- Evolucion de capital de la cuenta de trading
+
+
+def f_profit_diario(datos): 
+    Fechas = [datos["closetime"][l][:10] for l in range(datos.shape[0])]
+    timestamp = pd.DataFrame(columns = ('timestamp','profit_d'))
+    timestamp.timestamp = Fechas
+    timestamp.profit_d = datos['profit']
+    profit_diario = timestamp.groupby('timestamp').sum()
+    profit_diario = profit_diario.reset_index()
+    Fecha = pd.to_datetime(profit_diario['timestamp'])
+    profit_diario['timestamp'] = Fecha
+
+    profit_diario_1 = pd.DataFrame (columns = ['timestamp','profit_d'])
+    profit_diario_1.timestamp = pd.date_range(start="2019.08.27",end="2019.09.25")
+
+    df = pd.concat([profit_diario, profit_diario_1])
+    df = df.reset_index(drop=True)
+
+    Agrupados = df.groupby('timestamp')
+    Agrupados = Agrupados.mean()
+    f_profit_diario = Agrupados.fillna(0)
+
+    f_profit_diario = f_profit_diario.reset_index()
+    capital = 5000
+    capital_acm_d = []
+    for i in range(0,len(f_profit_diario)):
+        capital = f_profit_diario['profit_d'][i] + capital
+        capital_acm_d.append(capital)
+
+    profit_acm_d = pd.DataFrame(capital_acm_d)
+    f_profit_diario['profit_acm_d'] = profit_acm_d
+    
+    return f_profit_diario
+
