@@ -102,7 +102,6 @@ from datetime import timedelta
 
 def f_columnas_tiempos(datos):
     '''
-
     Parameters
     ----------
     datos : DataFrame con la informaciona utilizar
@@ -246,7 +245,7 @@ def f_estadisticas_ba(datos):
 
     df_1_tabla = pd.DataFrame (columns = ['Medida','Valor','Descripcion'])
     df_1_tabla.Medida = ['Ops totales','Ganadoras','Ganadoras_c','Ganadoras_v','Perdedoras','Perdedoras_c','Perdedoras_v','Media (Profit)','Media (Pips)','r_efectividad','r_proporcion','r_efectividad_c','r_efectividad_v']
-    df_1_tabla.Descripcion = ['Operaciones totales','Operaciones ganadoras','Operaciones ganadoras de compra','Operaciones perdedoras de venta','Operaciones perdedoras','Operaciones perdedoras de compra','Operaciones perdedoras de venta','Mediana de profit de operaciones','Mediana de pips de operaciones','Ganadoras Totales/Operaciones Totales','Perdedoras Totales/Ganadoras Totales','Ganadoras Compras/Operaciones Totales','Ganadoras Ventas/ Operaciones Totales']
+    df_1_tabla.Descripcion = ['Operaciones totales','Operaciones ganadoras','Operaciones ganadoras de compra','Operaciones ganadoras de venta','Operaciones perdedoras','Operaciones perdedoras de compra','Operaciones perdedoras de venta','Mediana de profit de operaciones','Mediana de pips de operaciones','Ganadoras Totales/Operaciones Totales','Perdedoras Totales/Ganadoras Totales','Ganadoras Compras/Operaciones Totales','Ganadoras Ventas/ Operaciones Totales']
     df_1_tabla.Valor = [Ops_totales, Win, WinB, WinS, Lose, LoseB, LoseS, Media_Profit, Media_Pips , r_efectividad, r_porcion, r_efectividad_c, r_efectividad_v,]
     
     #df_1_ranking
