@@ -382,9 +382,13 @@ def f_estadisticas_mad(datos):
 
     '''
     datos_1 = f_profit_diario(datos)
+    
     # rf y md diaria
     rf = .08 / 300
     mar = .3/300
+    
+    #rendimeitno sp
+    sp = .078/300
     
     #Rendimientos de los logaritmos acumulados diarios
     rp_0 = np.log(datos_1['profit_acm_d']/datos_1['profit_acm_d'].shift(1))
@@ -404,13 +408,23 @@ def f_estadisticas_mad(datos):
     rp_buy = np.mean(rend_buy)
     mar_buy = rend_buy[rend_buy <= mar]
         
+    #Drawdown
+    Draw_d_0 = datos_1[['timestamp','profit_acm_d']]
+    Draw_d_0.set_index('timestamp', inplace=True)
+    
+    Draw_d_1 = Draw_d_0['profit_acm_d'].cummax()
+    drawdown = (Draw_d_0['profit_acm_d'] - Draw_d_1 )/Draw_d_1 
+    fecha_drawdown = drawdown.idxmin()
+    Po_draw_down = drawdown.min()
+    
+    
     # Calculos de las medidas de atribución al desempeño
     sharpe = (rp - rf)/sdp
     sortino_c = (rp_buy-mar)/(mar_buy.std())*-1
     sortino_v = (rp_sell-mar)/(mar_sell.std())*-1
-    drawdown_capi = 5 
-    drawup_capi = 5
-    information_r = 5 
+    drawdown_capi = 0 
+    drawup_capi = 'El dia {} con ${:.2f} %'.format(fecha_drawdown,Po_draw_down)
+    information_r = (rp - sp)/rp
 
     MAD = pd.DataFrame(columns = ('metrica','valor','descripcion'))
     MAD.metrica = ['sharpe','sortino_c','sortino_v','drawdown_capi','drawup_capi','information_r']
