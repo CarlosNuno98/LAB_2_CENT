@@ -7,7 +7,18 @@
 # -- ------------------------------------------------------------------------------------ -- #
 
 import funciones as fn
+import visualizaciones as vz
 
-datos = fn.f_leer_archivo(param_archivo="archivo_tradevew_1.xlsx")
+archivo = "archivo_tradeview_1.xlsx"
+df_archivo = fn.f_leer_archivo(archivo)
+datos = df_archivo
+datos = fn.f_columnas_tiempos(datos)
+datos = fn.f_columnas_pips(datos)
+datos = fn.capital_acm(datos)
 
-fn.f_pip_size(param_ins=)
+f_estadisticas = fn.f_estadisticas_ba(datos)
+vz.df_1_ranking(f_estadisticas)
+
+Profit_diario = fn.f_profit_diario(datos)
+
+

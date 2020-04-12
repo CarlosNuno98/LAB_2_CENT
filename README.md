@@ -1,5 +1,5 @@
 # LAB_2_CENT
-Laboratorio 2 - Behaivoral Finance en Trading
+## Laboratorio 2 - Behaivoral Finance en Trading
 
 En este laboratorio es realizado para la asignatura de Microestructura y Sistemas de Trading, materia de la carrera de Ingenieria Financiera de la universidad de ITESO.
 

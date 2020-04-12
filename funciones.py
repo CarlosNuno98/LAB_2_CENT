@@ -185,7 +185,6 @@ def f_columnas_pips(datos):
 
 def f_estadisticas_ba(datos):
     '''
-
     Parameters
     ----------
     datos : DataFrame con la informaciona utilizar
@@ -261,6 +260,7 @@ def f_estadisticas_ba(datos):
 
     Efectividad = ((count_posit['profit'] / count_movi['profit'] ) * 100).round(4)
     Efectividad = pd.DataFrame(Efectividad)
+    Efectividad_1 = pd.DataFrame(Efectividad)
     Porcentaje  = [str(l) + "%" for l in Efectividad.profit]
     Efectividad.profit = Porcentaje
 
@@ -281,6 +281,20 @@ def f_estadisticas_ba(datos):
 # -- Evolucion de capital de la cuenta de trading
     
 def capital_acm(datos): 
+    '''
+    Parameters
+    ----------
+    datos : DataFrame con la informaciona utilizar
+    
+    Returns
+    -------
+    Capital_acm : Columna en datos con el capital acumulado
+    
+    Debugging
+    ---------
+    datos = 'archivo_tradeview_1.xlsx'
+
+    '''
     capital = 5000
     capital_acm = []
     
@@ -300,6 +314,22 @@ def capital_acm(datos):
 
 
 def f_profit_diario(datos): 
+    '''
+    Parameters
+    ----------
+    datos : DataFrame con la informaciona utilizar
+    
+    Returns
+    -------
+    f_profit_diario: DataFrame con fechas, profit diario y profit diario acumulado
+    
+    Debugging
+    ---------
+    datos = 'archivo_tradeview_1.xlsx'
+
+    '''
+    # Agrupamos las fechas en las que se hicieron transacciones para despues sumar los profit obtenemos en las operaciones diarias
+    # Para despues agruparlos en los profit_acm_d donde si no hubo ganancia o perdida ese dia se pone el valor del dia anterior
     Fechas = [datos["closetime"][l][:10] for l in range(datos.shape[0])]
     timestamp = pd.DataFrame(columns = ('timestamp','profit_d'))
     timestamp.timestamp = Fechas
@@ -318,7 +348,8 @@ def f_profit_diario(datos):
     Agrupados = df.groupby('timestamp')
     Agrupados = Agrupados.mean()
     f_profit_diario = Agrupados.fillna(0)
-
+    
+    # Comenzamos con un capital de 5000, donde se le iran sumando o restando las operaciones ganadoras o perdedoras
     f_profit_diario = f_profit_diario.reset_index()
     capital = 5000
     capital_acm_d = []
@@ -330,4 +361,65 @@ def f_profit_diario(datos):
     f_profit_diario['profit_acm_d'] = profit_acm_d
     
     return f_profit_diario
+
+# -- ------------------------------------------------------ FUNCION: f_estadisticas_mad-- #
+# -- ------------------------------------------------------------------------------------ -- #
+# -- Medidas de atribucion al desempeño
+
+def f_estadisticas_mad(datos): 
+    '''
+    Parameters
+    ----------
+    datos : DataFrame con la informaciona utilizar
+    
+    Returns
+    -------
+    MAD: Tabla con los valores obtenidos 
+    
+    Debugging
+    ---------
+    datos = 'archivo_tradeview_1.xlsx'
+
+    '''
+    datos_1 = f_profit_diario(datos)
+    # rf y md diaria
+    rf = .08 / 300
+    mar = .3/300
+    
+    #Rendimientos de los logaritmos acumulados diarios
+    rp_0 = np.log(datos_1['profit_acm_d']/datos_1['profit_acm_d'].shift(1))
+    rp = np.mean(rp_0)
+    sdp = rp_0.std()
+    
+    #Separamos las operaciones de compra de las de venta
+    sell = datos.loc[datos['type'] == 'sell']
+    buy = datos.loc[datos['type'] == 'buy']
+    
+    #Se obtienen los rendimientos de compra y venta con el mar señalado
+    rend_sell = np.log(sell['Capital_acm'] / sell['Capital_acm'].shift(1))
+    rp_sell = np.mean(rend_sell)
+    mar_sell = rend_sell[rend_sell <= mar]
+    
+    rend_buy = np.log(buy['Capital_acm'] / buy['Capital_acm'].shift(1))
+    rp_buy = np.mean(rend_buy)
+    mar_buy = rend_buy[rend_buy <= mar]
+        
+    # Calculos de las medidas de atribución al desempeño
+    sharpe = (rp - rf)/sdp
+    sortino_c = (rp_buy-mar)/(mar_buy.std())*-1
+    sortino_v = (rp_sell-mar)/(mar_sell.std())*-1
+    drawdown_capi = 5 
+    drawup_capi = 5
+    information_r = 5 
+
+    MAD = pd.DataFrame(columns = ('metrica','valor','descripcion'))
+    MAD.metrica = ['sharpe','sortino_c','sortino_v','drawdown_capi','drawup_capi','information_r']
+    MAD.valor = [sharpe,sortino_c,sortino_v,drawdown_capi,drawup_capi,information_r]
+    MAD.descripcion = ['Sharpe Ratio','Sortino Ratio para Posiciones  de Compra','Sortino Ratio para Posiciones de Venta','DrawDown de Capital','DrawUp de Capital','Information Ratio']
+    
+    return MAD
+
+
+
+
 
