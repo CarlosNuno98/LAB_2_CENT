@@ -422,8 +422,8 @@ def f_estadisticas_mad(datos):
     sharpe = (rp - rf)/sdp
     sortino_c = (rp_buy-mar)/(mar_buy.std())*-1
     sortino_v = (rp_sell-mar)/(mar_sell.std())*-1
-    drawdown_capi = 0 
-    drawup_capi = 'El dia {} con ${:.2f} %'.format(fecha_drawdown,Po_draw_down)
+    drawdown_capi = 'El dia {} con ${:.2f} %'.format(fecha_drawdown,Po_draw_down)
+    drawup_capi = 0
     information_r = (rp - sp)/rp
 
     MAD = pd.DataFrame(columns = ('metrica','valor','descripcion'))
