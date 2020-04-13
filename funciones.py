@@ -408,7 +408,7 @@ def f_estadisticas_mad(datos):
     rp_buy = np.mean(rend_buy)
     mar_buy = rend_buy[rend_buy <= mar]
         
-    #Drawdown
+    #Drawdown...
     Draw_d_0 = datos_1[['timestamp','profit_acm_d']]
     Draw_d_0.set_index('timestamp', inplace=True)
     
