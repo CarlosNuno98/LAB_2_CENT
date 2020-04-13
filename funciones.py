@@ -84,7 +84,7 @@ def f_pip_size(param_ins):
                  'eurgbp': 10000, 'eurchf': 10000, 'eurnzd': 10000, 'euraud': 10000,
                  'gbpnzd': 10000, 'gbpchf': 10000, 'gbpaud': 10000,
                  'audnzd': 10000, 'nzdcad': 10000, 'audcad': 10000,
-                 'xauusd': 10, 'xagusd': 10, 'btcusd': 1}
+                 'xauusd': 10, 'xagusd': 10, 'wticousd':10,'btcusd': 1}
 
     return pips_inst[inst]
 
