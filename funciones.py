@@ -426,6 +426,7 @@ def f_estadisticas_mad(datos):
     drawup_capi = 0
     information_r = (rp - sp)/rp
 
+    # Cramos la tabla de medidas de atribucion
     MAD = pd.DataFrame(columns = ('metrica','valor','descripcion'))
     MAD.metrica = ['sharpe','sortino_c','sortino_v','drawdown_capi','drawup_capi','information_r']
     MAD.valor = [sharpe,sortino_c,sortino_v,drawdown_capi,drawup_capi,information_r]
